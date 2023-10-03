@@ -3,11 +3,10 @@ import {
   CanActivate,
   ExecutionContext,
   ForbiddenException,
-  Scope,
 } from '@nestjs/common';
 import { Role } from '../core/enum';
 
-@Injectable({ scope: Scope.TRANSIENT })
+@Injectable()
 export class RolesGuard implements CanActivate {
   //   constructor(private reflector: Reflector) {}
   private roles: Role[];
