@@ -5,23 +5,28 @@ import {
   ForbiddenException,
 } from '@nestjs/common';
 import { Role } from '../core/enum';
+// import { Reflector } from '@nestjs/core';
+// import { ROLES_KEY, Roles } from './role.decorator';
 
 @Injectable()
 export class RolesGuard implements CanActivate {
   //   constructor(private reflector: Reflector) {}
-  private roles: Role[];
-  constructor(roles: Role[]) {
-    this.roles = roles;
-  }
+  constructor(private roles: Role[]) {}
 
   canActivate(context: ExecutionContext): boolean {
-    // const requiredRoles = this.reflector.getAllAndOverride<Role[]>(ROLES_KEY, [
+    // const requiredRoles = this.reflector.getAllAndOverride<Role[]>('roles', [
     //   context.getHandler(),
     //   context.getClass(),
     // ]);
-    if (!this.roles.length) {
-      return true;
-    }
+    // console.log(requiredRoles);
+    // if (!requiredRoles) {
+    //   return true;
+    // }
+    // const roles = this.reflector.get('roles', context.getHandler());
+    // console.log(roles);
+    // if (!this.roles.length) {
+    //   return true;
+    // }
     const request = context.switchToHttp().getRequest();
     if (
       this.roles.length &&

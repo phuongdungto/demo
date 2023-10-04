@@ -1,26 +1,30 @@
-import { Module, NestModule, MiddlewareConsumer } from '@nestjs/common';
+import { Module } from '@nestjs/common';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { UserModule } from './user/user.module';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { dataSourceOptions } from './database/data-source';
-import { UserController } from './user/user.controller';
-import { logger } from './core/middlewares/logger.middleware';
+import dataSource, { dataSourceOptions } from './database/data-source';
 import { AuthModule } from './auth/auth.module';
 import { ConfigModule } from '@nestjs/config';
+import { PostModule } from './post/post.module';
+import { MulterModule } from '@nestjs/platform-express';
 
 @Module({
   imports: [
     ConfigModule.forRoot({ isGlobal: true }),
-    TypeOrmModule.forRoot(dataSourceOptions),
+    TypeOrmModule.forRootAsync({
+      useFactory: () => dataSourceOptions,
+      dataSourceFactory: async () => {
+        const dataSourceInit = await dataSource.initialize();
+        return dataSourceInit;
+      },
+    }),
+    MulterModule.register({ dest: '../public/avatar' }),
     AuthModule,
     UserModule,
+    PostModule,
   ],
   controllers: [AppController],
   providers: [AppService],
 })
-export class AppModule implements NestModule {
-  configure(consume: MiddlewareConsumer) {
-    consume.apply(logger).forRoutes(UserController);
-  }
-}
+export class AppModule {}

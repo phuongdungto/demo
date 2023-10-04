@@ -1,3 +1,4 @@
+import { Post } from '../post/post.entity';
 import { Role } from '../core/enum';
 import {
   CreateDateColumn,
@@ -6,7 +7,10 @@ import {
   PrimaryGeneratedColumn,
   Entity,
   Column,
+  OneToMany,
+  Relation,
 } from 'typeorm';
+import { Token } from '../auth/token.entity';
 
 @Entity('users')
 export class User {
@@ -31,6 +35,9 @@ export class User {
   })
   role: string;
 
+  @Column({ name: 'image', default: 'default-avatar.jpg' })
+  image: string;
+
   @CreateDateColumn()
   createdAt: Date;
 
@@ -39,4 +46,10 @@ export class User {
 
   @DeleteDateColumn({ default: null })
   deletedAt: Date;
+
+  @OneToMany(() => Post, (post) => post.user)
+  posts: Relation<Post>[];
+
+  @OneToMany(() => Token, (token) => token.user)
+  tokens: Relation<Post>[];
 }

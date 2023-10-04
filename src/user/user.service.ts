@@ -6,7 +6,8 @@ import {
 import { InjectRepository } from '@nestjs/typeorm';
 import { User } from './user.entity';
 import { Repository } from 'typeorm';
-import { createUserDto, updateUserDto } from './user.dto';
+import { createUserDto, getusersDto, updateUserDto } from './user.dto';
+import { Pagination } from '../core/utils/pagination.ultis';
 
 @Injectable()
 export class UserService {
@@ -48,5 +49,13 @@ export class UserService {
       throw new NotFoundException('user not found');
     }
     await this.userRepo.delete(userId);
+  }
+
+  async getUsers(input: getusersDto) {
+    const query = Pagination(User, input);
+    const [rows, count] = await this.userRepo.findAndCount({
+      ...query,
+    });
+    return { users: rows, totalPage: count };
   }
 }

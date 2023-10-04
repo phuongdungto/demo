@@ -10,13 +10,16 @@ import {
   Put,
   Req,
   UseGuards,
+  Query,
+  UseInterceptors,
+  UploadedFile,
 } from '@nestjs/common';
 import { Response, NextFunction } from 'express';
 import { UserService } from './user.service';
-import { createUserDto, updateUserDto } from './user.dto';
+import { createUserDto, getusersDto, updateUserDto } from './user.dto';
 import { AuthGuard } from '../auth/auth.guard';
-import { Role } from '../core/enum';
-import { RolesGuard } from '../auth/role.guard';
+import { FileInterceptor } from '@nestjs/platform-express';
+import { diskStorage } from 'multer';
 
 @Controller('users')
 export class UserController {
@@ -37,7 +40,7 @@ export class UserController {
   }
 
   @Get(':id')
-  @UseGuards(AuthGuard, new RolesGuard([Role.ADMIN]))
+  @UseGuards(AuthGuard)
   async getUser(
     @Param('id') userId: number,
     @Res() res: Response,
@@ -54,13 +57,16 @@ export class UserController {
   }
 
   @Put(':id')
+  @UseInterceptors(FileInterceptor('file'))
   async updateUser(
     @Param('id') userId: number,
     @Body() body: updateUserDto,
     @Res() res: Response,
     @Next() next: NextFunction,
+    @UploadedFile() file: any,
   ) {
     try {
+      console.log(file);
       const newUser = await this.userService.updateUser(userId, body);
       return res.status(200).send(newUser);
     } catch (error) {
@@ -80,6 +86,21 @@ export class UserController {
         code: 'SUCESS',
         message: 'deleted user successfully',
       });
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  @Get()
+  async getUsers(
+    @Query() input: getusersDto,
+    @Res() res: Response,
+    @Next() next: NextFunction,
+  ) {
+    try {
+      console.log(input);
+      const users = await this.userService.getUsers(input);
+      return res.status(200).send(users);
     } catch (error) {
       next(error);
     }
