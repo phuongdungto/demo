@@ -20,6 +20,11 @@ import { createUserDto, getusersDto, updateUserDto } from './user.dto';
 import { AuthGuard } from '../auth/auth.guard';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { diskStorage } from 'multer';
+import {
+  FilterImage,
+  destination,
+  filename,
+} from '../core/static/image.static';
 
 @Controller('users')
 export class UserController {
@@ -57,7 +62,15 @@ export class UserController {
   }
 
   @Put(':id')
-  @UseInterceptors(FileInterceptor('file'))
+  @UseInterceptors(
+    FileInterceptor('file', {
+      storage: diskStorage({
+        destination: destination,
+        filename: filename,
+      }),
+      fileFilter: FilterImage,
+    }),
+  )
   async updateUser(
     @Param('id') userId: number,
     @Body() body: updateUserDto,
@@ -66,8 +79,11 @@ export class UserController {
     @UploadedFile() file: any,
   ) {
     try {
-      console.log(file);
-      const newUser = await this.userService.updateUser(userId, body);
+      const newBody = {
+        ...body,
+        image: file.filename,
+      };
+      const newUser = await this.userService.updateUser(userId, newBody);
       return res.status(200).send(newUser);
     } catch (error) {
       next(error);

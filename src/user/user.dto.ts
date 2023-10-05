@@ -1,5 +1,6 @@
 import {
   IsArray,
+  IsEmail,
   IsEnum,
   IsNumberString,
   IsOptional,
@@ -16,6 +17,7 @@ export class createUserDto {
 
   @IsString()
   @MinLength(8)
+  @IsEmail()
   username: string;
 
   @IsString()
@@ -25,8 +27,13 @@ export class createUserDto {
 
 export class updateUserDto {
   @IsString()
+  @IsOptional()
   @MinLength(4)
   fullname: string;
+
+  @IsEnum(Role, { each: true })
+  @IsOptional()
+  role: string;
 }
 
 export class deleteRepsonse {

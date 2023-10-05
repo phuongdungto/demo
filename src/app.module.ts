@@ -8,9 +8,14 @@ import { AuthModule } from './auth/auth.module';
 import { ConfigModule } from '@nestjs/config';
 import { PostModule } from './post/post.module';
 import { MulterModule } from '@nestjs/platform-express';
-
+import { RankModule } from './rank/rank.module';
+import { ServeStaticModule } from '@nestjs/serve-static/dist/serve-static.module';
+import { join } from 'path';
 @Module({
   imports: [
+    ServeStaticModule.forRoot({
+      rootPath: join(__dirname, '..', 'public/avatar'),
+    }),
     ConfigModule.forRoot({ isGlobal: true }),
     TypeOrmModule.forRootAsync({
       useFactory: () => dataSourceOptions,
@@ -23,6 +28,7 @@ import { MulterModule } from '@nestjs/platform-express';
     AuthModule,
     UserModule,
     PostModule,
+    RankModule,
   ],
   controllers: [AppController],
   providers: [AppService],

@@ -52,4 +52,6 @@ export class User {
 
   @OneToMany(() => Token, (token) => token.user)
   tokens: Relation<Post>[];
+
+  postsCount: number;
 }

@@ -8,6 +8,8 @@ import { User } from './user.entity';
 import { Repository } from 'typeorm';
 import { createUserDto, getusersDto, updateUserDto } from './user.dto';
 import { Pagination } from '../core/utils/pagination.ultis';
+import * as fs from 'fs/promises';
+import { join } from 'path';
 
 @Injectable()
 export class UserService {
@@ -37,6 +39,14 @@ export class UserService {
     const user = await this.userRepo.findOne({ where: { id: userId } });
     if (!user) {
       throw new NotFoundException('user not found');
+    }
+    console.log(body);
+    if (user.image !== 'default-avatar.jpg') {
+      if (user.image) {
+        fs.unlink(join(__dirname, '../../public/avatar', user.image)).catch(
+          (error) => console.log(error),
+        );
+      }
     }
     Object.assign(user, body);
     const newUser = await this.userRepo.save(user);
