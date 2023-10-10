@@ -2,6 +2,7 @@ import {
   Injectable,
   BadRequestException,
   NotFoundException,
+  ForbiddenException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { User } from './user.entity';
@@ -10,6 +11,8 @@ import { createUserDto, getusersDto, updateUserDto } from './user.dto';
 import { Pagination } from '../core/utils/pagination.ultis';
 import * as fs from 'fs/promises';
 import { join } from 'path';
+import { ReqUser } from '../core/interface/user.interface';
+import { Role } from '../core/enum';
 
 @Injectable()
 export class UserService {
@@ -17,13 +20,14 @@ export class UserService {
 
   async createUser(user: createUserDto): Promise<User> {
     const exist = await this.userRepo.findOne({
-      where: { fullname: user.fullname },
+      where: { username: user.username },
     });
     if (exist) {
       throw new BadRequestException('user already exists');
     }
     // user.password = bcrypt.hashSync(user.password, bcrypt.genSaltSync());
     const newUser = await this.userRepo.save(user);
+    delete newUser.password;
     return newUser;
   }
 
@@ -32,17 +36,29 @@ export class UserService {
     if (!user) {
       throw new NotFoundException('User not found');
     }
+    delete user.password;
     return user;
   }
 
-  async updateUser(userId: number, body: updateUserDto): Promise<User> {
-    const user = await this.userRepo.findOne({ where: { id: userId } });
+  async updateUser(
+    userId: any,
+    signin: ReqUser,
+    body: updateUserDto,
+  ): Promise<User> {
+    let user = new User();
+    if (userId !== 'me') {
+      user = await this.userRepo.findOne({ where: { id: userId } });
+    } else {
+      user = await this.userRepo.findOne({ where: { id: signin.sub } });
+    }
     if (!user) {
       throw new NotFoundException('user not found');
     }
-    console.log(body);
+    if (signin.role === Role.USER && signin.sub !== user.id) {
+      throw new ForbiddenException();
+    }
     if (user.image !== 'default-avatar.jpg') {
-      if (user.image) {
+      if (body.image) {
         fs.unlink(join(__dirname, '../../public/avatar', user.image)).catch(
           (error) => console.log(error),
         );
@@ -50,6 +66,7 @@ export class UserService {
     }
     Object.assign(user, body);
     const newUser = await this.userRepo.save(user);
+    delete newUser.password;
     return newUser;
   }
 
@@ -58,7 +75,7 @@ export class UserService {
     if (!user) {
       throw new NotFoundException('user not found');
     }
-    await this.userRepo.delete(userId);
+    await this.userRepo.softDelete(userId);
   }
 
   async getUsers(input: getusersDto) {

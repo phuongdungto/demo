@@ -61,9 +61,14 @@ export class PostService {
   }
 
   async getPosts(input: getPostsDto) {
+    console.log(input);
     const query = Pagination(Post, input);
+    console.log(query);
     const [rows, count] = await this.postRepo.findAndCount({
       ...query,
+      relations: {
+        user: true,
+      },
     });
     return { totalPage: Math.ceil(count / input.limit), posts: rows };
   }

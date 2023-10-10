@@ -1,4 +1,10 @@
-import { IsEnum, IsNumberString, IsOptional, IsString } from 'class-validator';
+import {
+  IsEnum,
+  IsNumber,
+  IsNumberString,
+  IsOptional,
+  IsString,
+} from 'class-validator';
 import { FilterPagination } from '../core/interface/filter.interface';
 
 export class createPostDto {
@@ -28,11 +34,9 @@ export class getPostsDto implements FilterPagination {
   @IsOptional()
   content: string;
 
-  @IsNumberString()
   @IsOptional()
   page: number;
 
-  @IsNumberString()
   @IsOptional()
   limit: number;
 

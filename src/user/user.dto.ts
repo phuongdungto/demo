@@ -34,6 +34,10 @@ export class updateUserDto {
   @IsEnum(Role, { each: true })
   @IsOptional()
   role: string;
+
+  @IsString()
+  @IsOptional()
+  image: string;
 }
 
 export class deleteRepsonse {
