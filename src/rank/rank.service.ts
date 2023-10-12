@@ -31,7 +31,7 @@ export class RankService {
     // console.log(query);
 
     const query = await this.entityManager.query(
-      `SELECT u.fullname, u.id, u.image, COUNT(p.id) as postCount FROM users u join posts p on u.id = p.user_id where YEAR(p.created_at)=? GROUP BY u.id ORDER BY postCount DESC LIMIT 100 `,
+      `SELECT u.fullname, u.username, u.id, u.image, COUNT(p.id) as postCount FROM users u join posts p on u.id = p.user_id where YEAR(p.created_at)=? GROUP BY u.id ORDER BY postCount DESC LIMIT 100 `,
       [year.getFullYear()],
     );
     return query;
@@ -40,7 +40,7 @@ export class RankService {
   async getRankMonthly() {
     const month = new Date();
     const query = await this.entityManager.query(
-      `SELECT u.fullname, u.id, u.image, COUNT(p.id) as postCount FROM users u join posts p on u.id = p.user_id where MONTH(p.created_at)=? AND YEAR(p.created_at)=? GROUP BY u.id ORDER BY postCount DESC LIMIT 100 `,
+      `SELECT u.fullname, u.username ,u.id, u.image, COUNT(p.id) as postCount FROM users u join posts p on u.id = p.user_id where MONTH(p.created_at)=? AND YEAR(p.created_at)=? GROUP BY u.id ORDER BY postCount DESC LIMIT 100 `,
       [month.getMonth() + 1, month.getFullYear()],
     );
     return query;

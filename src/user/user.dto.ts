@@ -23,6 +23,10 @@ export class createUserDto {
   @IsString()
   @MinLength(8)
   password: string;
+
+  @IsString()
+  @IsOptional()
+  image: string;
 }
 
 export class updateUserDto {
@@ -34,6 +38,10 @@ export class updateUserDto {
   @IsEnum(Role, { each: true })
   @IsOptional()
   role: string;
+
+  @IsString()
+  @IsOptional()
+  image: string;
 }
 
 export class deleteRepsonse {

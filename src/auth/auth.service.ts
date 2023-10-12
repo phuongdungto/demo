@@ -37,6 +37,7 @@ export class AuthService {
     if (!user) {
       throw new BadRequestException('username or password is incorrect');
     }
+    delete user.password;
     const payload = { sub: user.id, username: user.username, role: user.role };
     const access_token = await this.jwtService.signAsync(payload);
     return {
@@ -53,7 +54,6 @@ export class AuthService {
       throw new BadRequestException('username is already exists');
     }
     const userUpdate = new User();
-
     Object.assign(userUpdate, body);
     userUpdate.role = Role.USER;
     const newUser = await this.userRepo.save(userUpdate);

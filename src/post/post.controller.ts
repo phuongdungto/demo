@@ -103,6 +103,7 @@ export class PostController {
     @Next() next: NextFunction,
   ) {
     try {
+      console.log(input);
       const result = await this.postService.getPosts(input);
       return res.status(200).send(result);
     } catch (error) {

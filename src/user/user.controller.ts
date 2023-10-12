@@ -13,6 +13,7 @@ import {
   Query,
   UseInterceptors,
   UploadedFile,
+  ParseFilePipe,
 } from '@nestjs/common';
 import { Response, NextFunction } from 'express';
 import { UserService } from './user.service';
@@ -25,19 +26,39 @@ import {
   destination,
   filename,
 } from '../core/static/image.static';
+import { RolesGuard } from 'src/auth/role.guard';
+import { Role } from 'src/core/enum';
 
 @Controller('users')
 export class UserController {
   constructor(private userService: UserService) {}
 
   @Post()
+  @UseInterceptors(
+    FileInterceptor('image', {
+      storage: diskStorage({
+        destination: destination,
+        filename: filename,
+      }),
+      fileFilter: FilterImage,
+    }),
+  )
+  @UseGuards(AuthGuard, new RolesGuard([Role.ADMIN]))
   async createUser(
     @Body() body: createUserDto,
     @Res() res: Response,
     @Next() next: NextFunction,
+    @UploadedFile() file: any,
   ) {
     try {
-      const user = await this.userService.createUser(body);
+      let newBody = body;
+      if (file) {
+        newBody = {
+          ...body,
+          image: file.filename,
+        };
+      }
+      const user = await this.userService.createUser(newBody);
       return res.status(201).send(user);
     } catch (error) {
       next(error);
@@ -45,7 +66,6 @@ export class UserController {
   }
 
   @Get(':id')
-  @UseGuards(AuthGuard)
   async getUser(
     @Param('id') userId: number,
     @Res() res: Response,
@@ -63,7 +83,7 @@ export class UserController {
 
   @Put(':id')
   @UseInterceptors(
-    FileInterceptor('file', {
+    FileInterceptor('image', {
       storage: diskStorage({
         destination: destination,
         filename: filename,
@@ -71,19 +91,31 @@ export class UserController {
       fileFilter: FilterImage,
     }),
   )
+  @UseGuards(AuthGuard, new RolesGuard([Role.ADMIN, Role.USER]))
   async updateUser(
-    @Param('id') userId: number,
+    @Param('id') userId: any,
     @Body() body: updateUserDto,
     @Res() res: Response,
+    @Req() req: Request,
     @Next() next: NextFunction,
     @UploadedFile() file: any,
   ) {
     try {
-      const newBody = {
-        ...body,
-        image: file.filename,
-      };
-      const newUser = await this.userService.updateUser(userId, newBody);
+      console.log(file);
+      let newBody = body;
+      if (file) {
+        newBody = {
+          ...body,
+          image: file.filename,
+        };
+      }
+
+      const signin = req['user'];
+      const newUser = await this.userService.updateUser(
+        userId,
+        signin,
+        newBody,
+      );
       return res.status(200).send(newUser);
     } catch (error) {
       next(error);
@@ -91,6 +123,7 @@ export class UserController {
   }
 
   @Delete(':id')
+  @UseGuards(AuthGuard, new RolesGuard([Role.ADMIN]))
   async deleteUser(
     @Param('id') id: number,
     @Res() res: Response,
