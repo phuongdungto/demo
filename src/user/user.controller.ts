@@ -34,14 +34,31 @@ export class UserController {
   constructor(private userService: UserService) {}
 
   @Post()
+  @UseInterceptors(
+    FileInterceptor('image', {
+      storage: diskStorage({
+        destination: destination,
+        filename: filename,
+      }),
+      fileFilter: FilterImage,
+    }),
+  )
   @UseGuards(AuthGuard, new RolesGuard([Role.ADMIN]))
   async createUser(
     @Body() body: createUserDto,
     @Res() res: Response,
     @Next() next: NextFunction,
+    @UploadedFile() file: any,
   ) {
     try {
-      const user = await this.userService.createUser(body);
+      let newBody = body;
+      if (file) {
+        newBody = {
+          ...body,
+          image: file.filename,
+        };
+      }
+      const user = await this.userService.createUser(newBody);
       return res.status(201).send(user);
     } catch (error) {
       next(error);

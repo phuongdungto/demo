@@ -23,6 +23,10 @@ export class createUserDto {
   @IsString()
   @MinLength(8)
   password: string;
+
+  @IsString()
+  @IsOptional()
+  image: string;
 }
 
 export class updateUserDto {

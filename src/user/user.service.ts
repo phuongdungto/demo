@@ -64,6 +64,7 @@ export class UserService {
         );
       }
     }
+    console.log(body);
     Object.assign(user, body);
     const newUser = await this.userRepo.save(user);
     delete newUser.password;
@@ -83,6 +84,6 @@ export class UserService {
     const [rows, count] = await this.userRepo.findAndCount({
       ...query,
     });
-    return { users: rows, totalPage: count };
+    return { users: rows, totalPage: Math.ceil(count / input.limit) };
   }
 }
